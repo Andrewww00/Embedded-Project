@@ -1,0 +1,19 @@
+# STM32CubeIDE build folders
+Debug/
+Release/
+
+# Object files
+*.o
+*.d
+*.elf
+*.map
+*.list
+
+# CubeIDE files
+.settings/
+.metadata/
+*.launch
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
