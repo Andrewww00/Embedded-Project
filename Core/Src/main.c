@@ -21,13 +21,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include "iks4a1_motion_sensors.h"
-#include "lsm6dso16is_reg.h"
-#include "lis2mdl.h"
 #include "motion_fx.h"
 #include "stm32h7xx_nucleo.h"
+#include "iks4a1_motion_sensors.h"
 
 /* USER CODE END Includes */
 
@@ -58,8 +54,6 @@ UART_HandleTypeDef huart3;
 static uint8_t mfxstate[MFX_STATE_SIZE];
 MFX_input_t mfx_input;
 MFX_output_t mfx_output;
-MFX_MagCal_input_t magCalInput;
-MFX_MagCal_output_t magCalOutput;
 
 float initial_yaw = 0.0f;
 uint8_t yaw_reference_set = 0;
@@ -87,11 +81,11 @@ void start_mag_cal(void);
 /* USER CODE BEGIN 0 */
 
 void read_insert_sensors(){
-    IKS4A1_MOTION_SENSOR_Axes_t raw_acc, raw_gyro; // raw_mag;
+    IKS4A1_MOTION_SENSOR_Axes_t raw_acc, raw_gyro;
 
 	if(IKS4A1_MOTION_SENSOR_GetAxes(IKS4A1_LSM6DSO16IS_0, MOTION_ACCELERO, &raw_acc) == BSP_ERROR_NONE)
 	{
-		// MFX_input_t structure needs acc [g] gyro [dps] and [uT/50]
+		// MFX_input_t structure needs acc [g] gyro [dps]
 		mfx_input.acc[0] = raw_acc.x / 1000.0f;
 		mfx_input.acc[1] = raw_acc.y / 1000.0f;
 		mfx_input.acc[2] = raw_acc.z / 1000.0f;
@@ -122,7 +116,7 @@ int32_t set_sensors_scale(){
 
 	//Gyroscope
 
-	if (IKS4A1_MOTION_SENSOR_SetFullScale(IKS4A1_LSM6DSO16IS_0, MOTION_GYRO, 500) != BSP_ERROR_NONE)
+	if (IKS4A1_MOTION_SENSOR_SetFullScale(IKS4A1_LSM6DSO16IS_0, MOTION_GYRO, 250) != BSP_ERROR_NONE)
 	{
 		ret = BSP_ERROR_COMPONENT_FAILURE;
 	}
@@ -145,57 +139,7 @@ void sensors_init(){
 	}
 }
 
-/*
-void start_mag_cal(void)
-{
-    IKS4A1_MOTION_SENSOR_Axes_t mag_data;
-    char msg_mag[128];
-    uint32_t timeout = 0;
-    const uint32_t max_attempts = 10000;
-    uint8_t last_quality = 0xFF;
-
-    HAL_UART_Transmit(&huart3, (uint8_t*)"Calibrating magnetometer...\r\n", 29, HAL_MAX_DELAY);
-
-    do {
-        IKS4A1_MOTION_SENSOR_GetAxes(IKS4A1_LIS2MDL_0, MOTION_MAGNETO, &mag_data);
-
-        magCalInput.mag[0] = mag_data.x * 0.1f / 50.0f;
-        magCalInput.mag[1] = mag_data.y * 0.1f / 50.0f;
-        magCalInput.mag[2] = mag_data.z * 0.1f / 50.0f;
-        magCalInput.time_stamp = HAL_GetTick();
-
-        MotionFX_MagCal_run(&magCalInput);
-        MotionFX_MagCal_getParams(&magCalOutput);
-
-        if (magCalOutput.cal_quality != last_quality) {
-            last_quality = magCalOutput.cal_quality;
-
-            sprintf(msg_mag,
-                "Calibration Quality: %d. Offsets (uT): X=%.2f Y=%.2f Z=%.2f\r\n",
-                last_quality,
-                magCalOutput.hi_bias[0] * 50.0f,
-                magCalOutput.hi_bias[1] * 50.0f,
-                magCalOutput.hi_bias[2] * 50.0f);
-
-            HAL_UART_Transmit(&huart3, (uint8_t*)msg_mag, strlen(msg_mag), HAL_MAX_DELAY);
-        }
-
-        HAL_Delay(10);
-        timeout++;
-
-    } while (magCalOutput.cal_quality != MFX_MAGCALGOOD && timeout < max_attempts);
-
-    sprintf(msg_mag,
-        (magCalOutput.cal_quality == MFX_MAGCALGOOD) ?
-        "Calibration SUCCESSFUL. Quality: %d\r\n" :
-        "Calibration FAILED. Quality: %d\r\n",
-        magCalOutput.cal_quality);
-
-    HAL_UART_Transmit(&huart3, (uint8_t*)msg_mag, strlen(msg_mag), HAL_MAX_DELAY);
-}
-*/
-
-static float angle_diff_deg(float a, float b)
+float angle_diff_deg(float a, float b)
 {
     float diff = a - b;
 
@@ -286,7 +230,6 @@ int main(void)
     	    }
 
     	if(BSP_PB_GetState(BUTTON_USER)) {
-    	    //start_mag_cal();
     	    yaw_reference_set = 0;
     	    last_sensor_tick = HAL_GetTick();
     	}
