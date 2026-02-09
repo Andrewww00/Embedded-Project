@@ -219,20 +219,20 @@ int main(void) {
 	uint32_t last_tick = HAL_GetTick();
 
     /* Sampling period: 10 ms */
-    knobs.acc_orientation[0]  = 'n';
+    knobs.acc_orientation[0]  = 's';
     knobs.acc_orientation[1]  = 'e';
-    knobs.acc_orientation[2]  = 'd';
+    knobs.acc_orientation[2]  = 'u';
 
-    knobs.gyro_orientation[0] = 'n';
+    knobs.gyro_orientation[0] = 's';
     knobs.gyro_orientation[1] = 'e';
-    knobs.gyro_orientation[2] = 'd';
+    knobs.gyro_orientation[2] = 'u';
 
     knobs.mag_orientation[0] = 'n';
     knobs.mag_orientation[1] = 'e';
     knobs.mag_orientation[2] = 'd';
 
     knobs.output_type = MFX_ENGINE_9X;
-    knobs.modx = 1;  // magnetometer fusion enabled
+    knobs.modx = 1;
 
     MotionFX_setKnobs(mfxstate, &knobs);
     MotionFX_enable_6X(mfxstate, MFX_ENGINE_DISABLE);
